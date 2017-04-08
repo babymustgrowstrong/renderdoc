@@ -7,8 +7,7 @@ if(APPLE)
 elseif(ANDROID)
     list(APPEND sources renderdoccmd_android.cpp)
     include_directories(${ANDROID_NDK}/sources/android/native_app_glue)
-    list(APPEND libraries PRIVATE -llog -landroid)
-    set(LINKER_FLAGS "-Wl,--no-as-needed")
+    list(APPEND libraries PRIVATE log android)
 elseif(UNIX)
     list(APPEND sources renderdoccmd_linux.cpp)
 
@@ -18,7 +17,7 @@ elseif(UNIX)
         list(APPEND libraries PRIVATE ${OPENGL_gl_LIBRARY})
     endif()
 
-    if(ENABLE_GLES)
+	if(ENABLE_GLES)
         list(APPEND libraries PRIVATE -lEGL)
     endif()
 
@@ -57,8 +56,7 @@ target_link_libraries(renderdoccmd ${libraries})
 install (TARGETS renderdoccmd DESTINATION bin)
 
 if(ANDROID)
-    set(APK_TARGET_ID "android-23" CACHE STRING "The Target ID to build the APK for, use <android list targets> to choose another one.")
-
+    set(APK_TARGET_ID "android-21" CACHE STRING "The Target ID to build the APK for, use <android list targets> to choose another one.")
     set(APK_FILE ${CMAKE_BINARY_DIR}/bin/RenderDocCmd.apk)
     add_custom_target(apk ALL
                       DEPENDS ${APK_FILE})
@@ -69,7 +67,7 @@ if(ANDROID)
                        COMMAND ${CMAKE_COMMAND} -E make_directory libs/${ANDROID_ABI}
                        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:renderdoc> libs/${ANDROID_ABI}/$<TARGET_FILE_NAME:renderdoc>
                        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:renderdoccmd> libs/${ANDROID_ABI}/$<TARGET_FILE_NAME:renderdoccmd>
-                       COMMAND android update project --path . --name RenderDocCmd --target ${APK_TARGET_ID}
-                       COMMAND ant debug
+                       COMMAND call android update project --path . --name RenderDocCmd --target ${APK_TARGET_ID}
+                       COMMAND call ant debug
                        COMMAND ${CMAKE_COMMAND} -E copy bin/RenderDocCmd-debug.apk ${APK_FILE})
 endif()

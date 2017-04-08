@@ -253,7 +253,7 @@ if(UNIX)
 
         add_custom_command(OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/include-bin
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            COMMAND ${HOST_NATIVE_CPP_COMPILER} 3rdparty/include-bin/main.cpp -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/include-bin
+            COMMAND ${HOST_NATIVE_CPP_COMPILER} 3rdparty/include-bin/main.cpp -static -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/include-bin
             DEPENDS 3rdparty/include-bin/main.cpp)
     else()
         add_executable(include-bin 3rdparty/include-bin/main.cpp)

@@ -157,7 +157,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     endif()
 
     if(NOT CMAKE_BUILD_TYPE STREQUAL "Release")
-        list(APPEND warning_flags -Werror)
+        #list(APPEND warning_flags -Werror)
     endif()
 
     string(REPLACE ";" " " warning_flags "${warning_flags}")

@@ -299,9 +299,6 @@ list(APPEND renderdoc_objects
     ${data_objects})
 
 add_library(renderdoc SHARED ${renderdoc_objects})
-if (ANDROID)
-	set_target_properties(renderdoc PROPERTIES SUFFIX ".a" )
-endif()
 target_compile_definitions(renderdoc ${RDOC_DEFINITIONS})
 target_include_directories(renderdoc ${RDOC_INCLUDES})
 target_link_libraries(renderdoc ${RDOC_LIBRARIES})

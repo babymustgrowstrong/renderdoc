@@ -1,0 +1,3 @@
+
+
+call cmake -DCMAKE_TOOLCHAIN_FILE=../scripts/android.toolchain.cmake -DBUILD_ANDROID=1 -DCMAKE_ANDROID_API_MIN=21 -DANDROID_NATIVE_API_LEVEL=21 ..

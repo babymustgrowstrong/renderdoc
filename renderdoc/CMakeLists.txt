@@ -253,7 +253,7 @@ if(UNIX)
 
         add_custom_command(OUTPUT ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/include-bin
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            COMMAND ${HOST_NATIVE_CPP_COMPILER} 3rdparty/include-bin/main.cpp -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/include-bin
+            COMMAND ${HOST_NATIVE_CPP_COMPILER} 3rdparty/include-bin/main.cpp -static -o ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/include-bin
             DEPENDS 3rdparty/include-bin/main.cpp)
     else()
         add_executable(include-bin 3rdparty/include-bin/main.cpp)
@@ -303,7 +303,7 @@ target_compile_definitions(renderdoc ${RDOC_DEFINITIONS})
 target_include_directories(renderdoc ${RDOC_INCLUDES})
 target_link_libraries(renderdoc ${RDOC_LIBRARIES})
 
-install (TARGETS renderdoc DESTINATION lib)
+install (TARGETS renderdoc DESTINATION lib${LIB_SUFFIX})
 
 # Copy in application API header to include
 install (FILES api/app/renderdoc_app.h DESTINATION include RENAME renderdoc.h)

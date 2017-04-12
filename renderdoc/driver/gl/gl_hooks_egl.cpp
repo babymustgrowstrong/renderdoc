@@ -339,31 +339,6 @@ public:
     if(eglGetDisplay_real == NULL)
       eglGetDisplay_real = (PFN_eglGetDisplay)dlsym(libGLdlsymHandle, "eglGetDisplay");
 
-	//Jimmy Change Begin -----------------------------------------------------------------------------------
-	if (	eglGetProcAddress_real == NULL
-		||	eglCreateContext_real == NULL
-		||	eglDestroyContext_real == NULL
-		||	eglMakeCurrent_real == NULL
-		||	eglSwapBuffers_real == NULL
-		||	eglQuerySurface_real == NULL
-		||	eglGetConfigAttrib_real == NULL
-		||	eglGetDisplay_real == NULL)
-	{
-		void * egl_lib = dlopen("libEGL.so", RTLD_NOW | RTLD_GLOBAL);
-		eglGetDisplay_real = (PFN_eglGetDisplay)dlsym(egl_lib, "eglGetDisplay");
-		eglGetDisplay_real(EGL_DEFAULT_DISPLAY);
-
-		eglGetProcAddress_real = (PFN_eglGetProcAddress)dlsym(libGLdlsymHandle, "eglGetProcAddress");
-		eglCreateContext_real = (PFN_eglCreateContext)dlsym(libGLdlsymHandle, "eglCreateContext");
-		eglDestroyContext_real = (PFN_eglDestroyContext)dlsym(libGLdlsymHandle, "eglDestroyContext");
-		eglMakeCurrent_real = (PFN_eglMakeCurrent)dlsym(libGLdlsymHandle, "eglMakeCurrent");
-		eglSwapBuffers_real = (PFN_eglSwapBuffers)dlsym(libGLdlsymHandle, "eglSwapBuffers");
-		eglQuerySurface_real = (PFN_eglQuerySurface)dlsym(libGLdlsymHandle, "eglQuerySurface");
-		eglGetConfigAttrib_real = (PFN_eglGetConfigAttrib)dlsym(libGLdlsymHandle, "eglGetConfigAttrib");
-		eglGetDisplay_real = (PFN_eglGetDisplay)dlsym(libGLdlsymHandle, "eglGetDisplay");
-	}
-	//Jimmy Change End -------------------------------------------------------------------------------------
-
     return success;
   }
 

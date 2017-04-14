@@ -7,7 +7,7 @@ if(APPLE)
 elseif(ANDROID)
     list(APPEND sources renderdoccmd_android.cpp)
     include_directories(${ANDROID_NDK}/sources/android/native_app_glue)
-    list(APPEND libraries PRIVATE -llog -landroid)
+    list(APPEND libraries PRIVATE log android)
 elseif(UNIX)
     list(APPEND sources renderdoccmd_linux.cpp)
 
@@ -55,7 +55,7 @@ add_custom_command(TARGET renderdoccmd POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:renderdoccmd> ${CMAKE_SOURCE_DIR}/bin/)
 
 if(ANDROID)
-    set(APK_TARGET_ID "1" CACHE STRING "The Target ID to build the APK for, use <android list targets> to choose another one.")
+    set(APK_TARGET_ID "11" CACHE STRING "The Target ID to build the APK for, use <android list targets> to choose another one.")
 
     set(APK_FILE ${CMAKE_BINARY_DIR}/RenderDocCmd.apk)
     add_custom_target(apk ALL

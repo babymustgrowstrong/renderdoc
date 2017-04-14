@@ -898,7 +898,7 @@ void WrappedOpenGL::Initialise(GLInitParams &params)
     gl.glTexParameteri(target, eGL_TEXTURE_WRAP_S, eGL_CLAMP_TO_EDGE);
     gl.glTexParameteri(target, eGL_TEXTURE_WRAP_T, eGL_CLAMP_TO_EDGE);
   }
-  gl.glFramebufferTexture(eGL_FRAMEBUFFER, eGL_COLOR_ATTACHMENT0, m_FakeBB_Color, 0);
+  gl.glFramebufferTexture2D(eGL_FRAMEBUFFER, eGL_COLOR_ATTACHMENT0, eGL_TEXTURE_2D, m_FakeBB_Color, 0);
 
   gl.glViewport(0, 0, params.width, params.height);
 
@@ -954,10 +954,10 @@ void WrappedOpenGL::Initialise(GLInitParams &params)
     }
 
     if(stencil)
-      gl.glFramebufferTexture(eGL_FRAMEBUFFER, eGL_DEPTH_STENCIL_ATTACHMENT, m_FakeBB_DepthStencil,
+      gl.glFramebufferTexture2D(eGL_FRAMEBUFFER, eGL_DEPTH_STENCIL_ATTACHMENT, eGL_TEXTURE_2D, m_FakeBB_DepthStencil,
                               0);
     else
-      gl.glFramebufferTexture(eGL_FRAMEBUFFER, eGL_DEPTH_ATTACHMENT, m_FakeBB_DepthStencil, 0);
+      gl.glFramebufferTexture2D(eGL_FRAMEBUFFER, eGL_DEPTH_ATTACHMENT, eGL_TEXTURE_2D, m_FakeBB_DepthStencil, 0);
   }
 
   // give the backbuffer a default clear color

@@ -12,6 +12,6 @@ public class Loader extends android.app.NativeActivity
     protected void onCreate(android.os.Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Popup a dialog if we haven't granted Android storage permissions.
-        requestPermissions(new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        //requestPermissions(new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
     }
 }

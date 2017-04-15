@@ -1055,18 +1055,11 @@ void APIENTRY _glCopyImageSubData(GLuint srcName, GLenum srcTarget, GLint srcLev
         // simple case, non-layered. If we have a layered copy we need to loop and rebind
         if(!layered)
         {
-		   if (srcTarget == eGL_TEXTURE_1D)
-		      internalGL->glFramebufferTexture1D(eGL_READ_FRAMEBUFFER, attach, srcTarget, srcName, srcLevel);
-		   else  if (srcTarget == eGL_TEXTURE_2D)
-			  internalGL->glFramebufferTexture2D(eGL_READ_FRAMEBUFFER, attach, srcTarget, srcName, srcLevel);
-
-		   // we assume the destination texture is the same format, and we asserted that it's the
-		   // same
-		   // target.
-		   if (dstTarget == eGL_TEXTURE_1D)
-			  internalGL->glFramebufferTexture1D(eGL_DRAW_FRAMEBUFFER, attach, dstTarget, dstName, dstLevel);
-		   else if (dstTarget == eGL_TEXTURE_2D)
-		      internalGL->glFramebufferTexture2D(eGL_DRAW_FRAMEBUFFER, attach, dstTarget, dstName, dstLevel);
+          internalGL->glFramebufferTexture(eGL_READ_FRAMEBUFFER, attach, srcName, srcLevel);
+          // we assume the destination texture is the same format, and we asserted that it's the
+          // same
+          // target.
+          internalGL->glFramebufferTexture(eGL_DRAW_FRAMEBUFFER, attach, dstName, dstLevel);
         }
       }
     }

@@ -214,7 +214,7 @@ void GLReplay::CreateOutputWindowBackbuffer(OutputWindow &outwin, bool depth)
   gl.glTexParameteri(eGL_TEXTURE_2D, eGL_TEXTURE_MAG_FILTER, eGL_NEAREST);
   gl.glTexParameteri(eGL_TEXTURE_2D, eGL_TEXTURE_WRAP_S, eGL_CLAMP_TO_EDGE);
   gl.glTexParameteri(eGL_TEXTURE_2D, eGL_TEXTURE_WRAP_T, eGL_CLAMP_TO_EDGE);
-  gl.glFramebufferTexture2D(eGL_FRAMEBUFFER, eGL_COLOR_ATTACHMENT0, eGL_TEXTURE_2D, outwin.BlitData.backbuffer, 0);
+  gl.glFramebufferTexture(eGL_FRAMEBUFFER, eGL_COLOR_ATTACHMENT0, outwin.BlitData.backbuffer, 0);
 
   if(depth)
   {
@@ -307,8 +307,8 @@ void GLReplay::BindOutputWindow(uint64_t id, bool depth)
   m_pDriver->glBindFramebuffer(eGL_FRAMEBUFFER, outw.BlitData.windowFBO);
   m_pDriver->glViewport(0, 0, outw.width, outw.height);
 
-  m_pDriver->glFramebufferTexture2D(
-      eGL_FRAMEBUFFER, eGL_DEPTH_ATTACHMENT, eGL_TEXTURE_2D,
+  m_pDriver->glFramebufferTexture(
+      eGL_FRAMEBUFFER, eGL_DEPTH_ATTACHMENT,
       depth && outw.BlitData.depthstencil ? outw.BlitData.depthstencil : 0, 0);
 
   DebugData.outWidth = float(outw.width);
@@ -2276,7 +2276,7 @@ byte *GLReplay::GetTextureData(ResourceId tex, uint32_t arrayIdx, uint32_t mip,
       gl.glFramebufferTexture3D(eGL_FRAMEBUFFER, eGL_COLOR_ATTACHMENT0, eGL_TEXTURE_3D, tempTex, 0,
                                 0);
     else
-      gl.glFramebufferTexture2D(eGL_FRAMEBUFFER, eGL_COLOR_ATTACHMENT0, eGL_TEXTURE_2D, tempTex, 0);
+      gl.glFramebufferTexture(eGL_FRAMEBUFFER, eGL_COLOR_ATTACHMENT0, tempTex, 0);
 
     float col[] = {0.3f, 0.6f, 0.9f, 1.0f};
     gl.glClearBufferfv(eGL_COLOR, 0, col);
@@ -2358,13 +2358,13 @@ byte *GLReplay::GetTextureData(ResourceId tex, uint32_t arrayIdx, uint32_t mip,
     gl.glGenFramebuffers(2, fbos);
 
     gl.glBindFramebuffer(eGL_FRAMEBUFFER, fbos[0]);
-    gl.glFramebufferTexture2D(eGL_FRAMEBUFFER, eGL_COLOR_ATTACHMENT0, eGL_TEXTURE_2D, tempTex, 0);
+    gl.glFramebufferTexture(eGL_FRAMEBUFFER, eGL_COLOR_ATTACHMENT0, tempTex, 0);
 
     gl.glBindFramebuffer(eGL_FRAMEBUFFER, fbos[1]);
     if(texType == eGL_TEXTURE_2D_MULTISAMPLE_ARRAY)
       gl.glFramebufferTextureLayer(eGL_FRAMEBUFFER, eGL_COLOR_ATTACHMENT0, texname, 0, arrayIdx);
     else
-      gl.glFramebufferTexture2D(eGL_FRAMEBUFFER, eGL_COLOR_ATTACHMENT0, eGL_TEXTURE_2D, texname, 0);
+      gl.glFramebufferTexture(eGL_FRAMEBUFFER, eGL_COLOR_ATTACHMENT0, texname, 0);
 
     // do default resolve (framebuffer blit)
     gl.glBindFramebuffer(eGL_DRAW_FRAMEBUFFER, fbos[0]);

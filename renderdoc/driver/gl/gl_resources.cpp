@@ -300,7 +300,6 @@ GLenum GetBaseFormat(GLenum internalFormat)
     case eGL_R16_SNORM:
     case eGL_R16F:
     case eGL_R32F: return eGL_RED;
-	case eGL_ALPHA:
     case eGL_ALPHA8_EXT: return eGL_ALPHA;
     case eGL_LUMINANCE: return eGL_LUMINANCE;
     case eGL_LUMINANCE_ALPHA: return eGL_LUMINANCE_ALPHA;
@@ -453,7 +452,6 @@ GLenum GetDataType(GLenum internalFormat)
     case eGL_DEPTH24_STENCIL8: return eGL_UNSIGNED_INT_24_8;
     case eGL_DEPTH32F_STENCIL8: return eGL_FLOAT_32_UNSIGNED_INT_24_8_REV;
     case eGL_STENCIL_INDEX8: return eGL_UNSIGNED_BYTE;
-	case eGL_ALPHA:
     case eGL_ALPHA8_EXT:
     case eGL_LUMINANCE_ALPHA:
     case eGL_LUMINANCE:

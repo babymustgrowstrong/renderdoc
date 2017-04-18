@@ -87,6 +87,33 @@ ReplayStatus GLES_CreateReplayDevice(const char *logfile, IReplayDriver **driver
     eglCreateWindowSurfaceProc =
         (PFN_eglCreateWindowSurface)dlsym(RTLD_NEXT, "eglCreateWindowSurface");
 
+	//Jimmy Hack Begin
+	if (eglGetProcAddressProc == NULL || eglBindAPIProc == NULL || eglGetDisplayProc == NULL ||
+		eglCreateContextProc == NULL || eglMakeCurrentProc == NULL || eglSwapBuffersProc == NULL ||
+		eglDestroyContextProc == NULL || eglDestroySurfaceProc == NULL ||
+		eglQuerySurfaceProc == NULL || eglCreatePbufferSurfaceProc == NULL ||
+		eglCreateWindowSurfaceProc == NULL || eglChooseConfigProc == NULL)
+	{
+		void * egl_lib = dlopen("libEGL.so", RTLD_NOW | RTLD_GLOBAL);
+		eglBindAPIProc = (PFN_eglBindAPI)dlsym(egl_lib, "eglBindAPI");
+		eglBindAPIProc(EGL_OPENGL_ES_API);
+
+		eglGetProcAddressProc = (PFN_eglGetProcAddress)dlsym(RTLD_NEXT, "eglGetProcAddress");
+		eglChooseConfigProc = (PFN_eglChooseConfig)dlsym(RTLD_NEXT, "eglChooseConfig");
+		eglInitializeProc = (PFN_eglInitialize)dlsym(RTLD_NEXT, "eglInitialize");
+		eglBindAPIProc = (PFN_eglBindAPI)dlsym(RTLD_NEXT, "eglBindAPI");
+		eglGetDisplayProc = (PFN_eglGetDisplay)dlsym(RTLD_NEXT, "eglGetDisplay");
+		eglCreateContextProc = (PFN_eglCreateContext)dlsym(RTLD_NEXT, "eglCreateContext");
+		eglMakeCurrentProc = (PFN_eglMakeCurrent)dlsym(RTLD_NEXT, "eglMakeCurrent");
+		eglSwapBuffersProc = (PFN_eglSwapBuffers)dlsym(RTLD_NEXT, "eglSwapBuffers");
+		eglDestroyContextProc = (PFN_eglDestroyContext)dlsym(RTLD_NEXT, "eglDestroyContext");
+		eglDestroySurfaceProc = (PFN_eglDestroySurface)dlsym(RTLD_NEXT, "eglDestroySurface");
+		eglQuerySurfaceProc = (PFN_eglQuerySurface)dlsym(RTLD_NEXT, "eglQuerySurface");
+		eglCreatePbufferSurfaceProc = (PFN_eglCreatePbufferSurface)dlsym(RTLD_NEXT, "eglCreatePbufferSurface");
+		eglCreateWindowSurfaceProc = (PFN_eglCreateWindowSurface)dlsym(RTLD_NEXT, "eglCreateWindowSurface");
+	}
+	//Jimmy Hack End
+
     if(eglGetProcAddressProc == NULL || eglBindAPIProc == NULL || eglGetDisplayProc == NULL ||
        eglCreateContextProc == NULL || eglMakeCurrentProc == NULL || eglSwapBuffersProc == NULL ||
        eglDestroyContextProc == NULL || eglDestroySurfaceProc == NULL ||

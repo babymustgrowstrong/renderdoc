@@ -1484,9 +1484,12 @@ void GLRenderState::ApplyState(void *ctx, WrappedOpenGL *gl)
 
   m_Real->glClearStencil((GLint)StencilClearValue);
 
-  for(GLuint i = 0; i < RDCMIN(maxDraws, (GLuint)ARRAY_COUNT(ColorMasks)); i++)
-    m_Real->glColorMaski(i, ColorMasks[i].red, ColorMasks[i].green, ColorMasks[i].blue,
-                         ColorMasks[i].alpha);
+  if(m_Real->glColorMaski)
+  {
+	for (GLuint i = 0; i < RDCMIN(maxDraws, (GLuint)ARRAY_COUNT(ColorMasks)); i++)
+	  m_Real->glColorMaski(i, ColorMasks[i].red, ColorMasks[i].green, ColorMasks[i].blue,
+	    ColorMasks[i].alpha);
+  }
 
   m_Real->glSampleMaski(0, (GLbitfield)SampleMask[0]);
   m_Real->glSampleCoverage(SampleCoverage, SampleCoverageInvert ? GL_TRUE : GL_FALSE);

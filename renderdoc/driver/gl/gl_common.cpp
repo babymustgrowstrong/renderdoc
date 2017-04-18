@@ -225,7 +225,6 @@ bool ValidateFunctionPointers(const GLHookSet &real)
   CHECK_PRESENT(glEnablei)
   CHECK_PRESENT(glEnableVertexAttribArray)
   CHECK_PRESENT(glEndQuery)
-  CHECK_PRESENT(glFramebufferTexture)
   CHECK_PRESENT(glFramebufferTexture2D)
   CHECK_PRESENT(glFramebufferTextureLayer)
   CHECK_PRESENT(glFrontFace)
@@ -367,6 +366,12 @@ bool ValidateFunctionPointers(const GLHookSet &real)
     CHECK_PRESENT(glProgramUniformMatrix4x3dv)
     CHECK_PRESENT(glProvokingVertex)
     CHECK_PRESENT(glVertexAttribLFormat)
+  }
+
+  // GL or GLES 3.2+ only
+  if (!IsGLES || GLCoreVersion >= 32)
+  {
+	CHECK_PRESENT(glFramebufferTexture)
   }
 
   // other functions are either checked for presence explicitly (like

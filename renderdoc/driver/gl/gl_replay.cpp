@@ -1364,12 +1364,15 @@ void GLReplay::SavePipelineState()
 
         if(target != eGL_TEXTURE_BUFFER)
         {
-          if(samp != 0)
-            gl.glGetSamplerParameterfv(samp, eGL_TEXTURE_BORDER_COLOR,
-                                       &pipe.Samplers[unit].BorderColor[0]);
-          else
-            gl.glGetTexParameterfv(target, eGL_TEXTURE_BORDER_COLOR,
-                                   &pipe.Samplers[unit].BorderColor[0]);
+		  if (!IsGLES)
+		  {
+			if (samp != 0)
+			  gl.glGetSamplerParameterfv(samp, eGL_TEXTURE_BORDER_COLOR,
+				&pipe.Samplers[unit].BorderColor[0]);
+			else
+			  gl.glGetTexParameterfv(target, eGL_TEXTURE_BORDER_COLOR,
+				&pipe.Samplers[unit].BorderColor[0]);
+		  }
 
           GLint v;
           v = 0;

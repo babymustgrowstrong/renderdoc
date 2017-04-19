@@ -737,11 +737,14 @@ void GLResourceManager::PrepareTextureInitialContents(ResourceId liveid, Resourc
                                     (GLint *)&state->wrap[2]);
       gl.glGetTextureParameterfvEXT(res.name, details.curType, eGL_TEXTURE_MIN_LOD, &state->minLod);
       gl.glGetTextureParameterfvEXT(res.name, details.curType, eGL_TEXTURE_MAX_LOD, &state->maxLod);
-      gl.glGetTextureParameterfvEXT(res.name, details.curType, eGL_TEXTURE_BORDER_COLOR,
-                                    &state->border[0]);
-      if(!IsGLES)
-        gl.glGetTextureParameterfvEXT(res.name, details.curType, eGL_TEXTURE_LOD_BIAS,
-                                      &state->lodBias);
+	  if (!IsGLES)
+	  {
+		gl.glGetTextureParameterfvEXT(res.name, details.curType, eGL_TEXTURE_BORDER_COLOR,
+		  &state->border[0]);
+	
+		gl.glGetTextureParameterfvEXT(res.name, details.curType, eGL_TEXTURE_LOD_BIAS,
+		  &state->lodBias);
+	  }
 
       // CLAMP isn't supported (border texels gone), assume they meant CLAMP_TO_EDGE
       if(state->wrap[0] == eGL_CLAMP)
@@ -1844,11 +1847,13 @@ void GLResourceManager::Apply_InitialState(GLResource live, InitialContentData i
                                    (GLint *)&state->wrap[1]);
         gl.glTextureParameterivEXT(live.name, details.curType, eGL_TEXTURE_WRAP_T,
                                    (GLint *)&state->wrap[2]);
-        gl.glTextureParameterfvEXT(live.name, details.curType, eGL_TEXTURE_BORDER_COLOR,
-                                   state->border);
-        if(!IsGLES)
-          gl.glTextureParameterfvEXT(live.name, details.curType, eGL_TEXTURE_LOD_BIAS,
-                                     &state->lodBias);
+		if (!IsGLES)
+		{
+		  gl.glTextureParameterfvEXT(live.name, details.curType, eGL_TEXTURE_BORDER_COLOR,
+			state->border);
+		  gl.glTextureParameterfvEXT(live.name, details.curType, eGL_TEXTURE_LOD_BIAS,
+			&state->lodBias);
+		}
         if(details.curType != eGL_TEXTURE_RECTANGLE)
         {
           gl.glTextureParameterfvEXT(live.name, details.curType, eGL_TEXTURE_MIN_LOD, &state->minLod);

@@ -3308,6 +3308,10 @@ ResourceId GLReplay::RenderOverlay(ResourceId texid, CompType typeHint, DebugOve
 
 void GLReplay::InitPostVSBuffers(uint32_t eventID)
 {
+#if ENABLED(RDOC_ANDROID)
+	return;	//Jimmy Hack
+#endif
+
   if(m_PostVSData.find(eventID) != m_PostVSData.end())
     return;
 

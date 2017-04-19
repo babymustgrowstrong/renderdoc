@@ -292,34 +292,66 @@ vector<CounterResult> GLReplay::FetchCounters(const vector<GPUCounter> &counters
     m_pDriver->glGetIntegerv(eGL_QUERY_BUFFER_BINDING, (GLint *)&prevbind);
     m_pDriver->glBindBuffer(eGL_QUERY_BUFFER, 0);
 
-    for(size_t i = 0; i < ctx.queries.size(); i++)
+    if (GLCoreVersion >= 32)
     {
-      for(uint32_t c = 0; c < counters.size(); c++)
+      for (size_t i = 0; i < ctx.queries.size(); i++)
       {
-        if(ctx.queries[i].obj[(uint32_t)counters[c]])
+        for (uint32_t c = 0; c < counters.size(); c++)
         {
-          GLuint64 data = 0;
-          m_pDriver->glGetQueryObjectui64v(ctx.queries[i].obj[(uint32_t)counters[c]],
-                                           eGL_QUERY_RESULT, &data);
-
-          double duration = double(data) * nanosToSecs;
-
-          if(m_pDriver->glGetError())
+          if (ctx.queries[i].obj[counters[c]])
           {
-            data = (uint64_t)-1;
-            duration = -1;
-          }
+            GLuint64 data = 0;
+            m_pDriver->glGetQueryObjectui64v(ctx.queries[i].obj[counters[c]], eGL_QUERY_RESULT, &data);
 
-          if(counters[c] == GPUCounter::EventGPUDuration)
-          {
-            ret.push_back(
-                CounterResult(ctx.queries[i].eventID, GPUCounter::EventGPUDuration, duration));
+            double duration = double(data) * nanosToSecs;
+			
+            if (m_pDriver->glGetError())
+            {
+	      data = (uint64_t)-1;
+              duration = -1;
+            }
+
+            if (counters[c] == eCounter_EventGPUDuration)
+            {
+              ret.push_back(CounterResult(ctx.queries[i].eventID, eCounter_EventGPUDuration, duration));
+            }
+            else
+              ret.push_back(CounterResult(ctx.queries[i].eventID, counters[c], data));
           }
           else
-            ret.push_back(CounterResult(ctx.queries[i].eventID, counters[c], data));
+            ret.push_back(CounterResult(ctx.queries[i].eventID, counters[c], (uint64_t)-1));
         }
-        else
-          ret.push_back(CounterResult(ctx.queries[i].eventID, counters[c], (uint64_t)-1));
+      }
+    }
+    else
+    {
+      for (size_t i = 0; i < ctx.queries.size(); i++)
+      {
+        for (uint32_t c = 0; c < counters.size(); c++)
+        {
+          if (ctx.queries[i].obj[counters[c]])
+          {
+            GLuint data = 0;
+            m_pDriver->glGetQueryObjectuiv(ctx.queries[i].obj[counters[c]], eGL_QUERY_RESULT, &data);
+
+            double duration = double(data) * nanosToSecs;
+
+            if (m_pDriver->glGetError())
+            {
+              data = (uint32_t)-1;
+              duration = -1;
+            }
+
+            if (counters[c] == eCounter_EventGPUDuration)
+            {
+              ret.push_back(CounterResult(ctx.queries[i].eventID, eCounter_EventGPUDuration, duration));
+            }
+            else
+              ret.push_back(CounterResult(ctx.queries[i].eventID, counters[c], data));
+          }
+          else
+            ret.push_back(CounterResult(ctx.queries[i].eventID, counters[c], (uint64_t)-1));
+        }
       }
     }
 

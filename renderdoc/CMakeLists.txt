@@ -289,6 +289,11 @@ if(ENABLE_GL OR ENABLE_GLES OR ENABLE_VULKAN)
     list(APPEND renderdoc_objects $<TARGET_OBJECTS:rdoc_spirv>)
 endif()
 
+if(ENABLE_VRAPI)
+    add_subdirectory(driver/vrapi)
+    list(APPEND renderdoc_objects $<TARGET_OBJECTS:rdoc_vrapi>)
+endif()
+
 # rdoc must be after its drivers because of linux_libentry.cpp
 list(APPEND renderdoc_objects
     $<TARGET_OBJECTS:rdoc>

@@ -541,6 +541,7 @@ public:
   GLResourceManager *GetResourceManager() { return m_ResourceManager; }
   ResourceId GetDeviceResourceID() { return m_DeviceResourceID; }
   ResourceId GetContextResourceID() { return m_ContextResourceID; }
+  LogState GetState() { return m_State; }
   GLReplay *GetReplay() { return &m_Replay; }
   void SetDriverType(RDCDriver type) { m_DriverType = type; }
   bool isGLESMode() { return m_DriverType == RDC_OpenGLES; }

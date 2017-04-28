@@ -57,6 +57,7 @@ install (TARGETS renderdoccmd DESTINATION bin)
 
 if(ANDROID)
     set(APK_TARGET_ID "android-21" CACHE STRING "The Target ID to build the APK for, use <android list targets> to choose another one.")
+
     set(APK_FILE ${CMAKE_BINARY_DIR}/bin/RenderDocCmd.apk)
     add_custom_target(apk ALL
                       DEPENDS ${APK_FILE})

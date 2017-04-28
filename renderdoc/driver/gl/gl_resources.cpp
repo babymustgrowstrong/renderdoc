@@ -560,7 +560,7 @@ GLenum GetSizedFormat(const GLHookSet &gl, GLenum target, GLenum internalFormat,
   }
 
   GLint red, depth, stencil;
-  if(HasExt[ARB_internalformat_query2] && gl.glGetInternalformativ)
+  if(gl.glGetInternalformativ)
   {
     gl.glGetInternalformativ(target, internalFormat, eGL_INTERNALFORMAT_RED_SIZE, sizeof(GLint),
                              &red);

@@ -2033,12 +2033,12 @@ void ReplayProxy::RemapProxyTextureIfNeeded(ResourceFormat &format, GetTextureDa
   }
   else
   {
-    if(format.compByteWidth == 4)
+	if (format.compByteWidth == 4)
       params.remap = eRemap_RGBA32;
-    else if(format.compByteWidth == 2)
-      params.remap = eRemap_RGBA16;
-    else if(format.compByteWidth == 1)
-      params.remap = eRemap_RGBA8;
+	else if (format.compByteWidth == 2)
+	  params.remap = eRemap_RGBA16;
+	else if (format.compByteWidth == 1)
+	  params.remap = eRemap_RGBA8;
   }
 
   switch(params.remap)

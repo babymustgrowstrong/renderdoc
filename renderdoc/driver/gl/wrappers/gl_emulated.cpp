@@ -947,6 +947,8 @@ static const format_data formats[] = {
     {eGL_RGBA16UI, eGL_UNSIGNED_INT, 4, 16, 0, 0},
     {eGL_RGBA32I, eGL_INT, 4, 32, 0, 0},
     {eGL_RGBA32UI, eGL_UNSIGNED_INT, 4, 32, 0, 0},
+	{eGL_BGRA_EXT, eGL_UNSIGNED_NORMALIZED, 4, 8, 0, 0},
+	{eGL_BGRA8_EXT, eGL_UNSIGNED_NORMALIZED, 4, 8, 0, 0},
 
     {eGL_BGRA8_EXT, eGL_UNSIGNED_BYTE, 4, 8, 0, 0},
 
@@ -1468,6 +1470,12 @@ void APIENTRY _glGetTexImage(GLenum target, GLint level, GLenum format, GLenum t
   hookset->glDeleteFramebuffers(1, &fbo);
 }
 
+void APIENTRY _glGetCompressedTexImage(GLenum target, GLint level, GLvoid * pixels)
+{
+  //on second thought, let's just do nothing for now
+  RDCWARN("calling unimplemented function glGetCompressedTexImage, function skipped");
+}
+
 void APIENTRY _glDrawElementsBaseVertex(GLenum mode, GLsizei count, GLenum type,
                                         const void *indices, GLint basevertex)
 {
@@ -1537,6 +1545,7 @@ void EmulateRequiredExtensions(GLHookSet *hooks)
   {
     EMULATE_FUNC(glGetBufferSubData);
     EMULATE_FUNC(glGetTexImage);
+    EMULATE_FUNC(glGetCompressedTexImage);
 
     if(GLCoreVersion < 32)
     {

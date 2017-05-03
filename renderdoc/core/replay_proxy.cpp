@@ -2017,12 +2017,12 @@ void ReplayProxy::RemapProxyTextureIfNeeded(ResourceFormat &format, GetTextureDa
   {
     switch(format.specialFormat)
     {
-      case eSpecial_S8:
-      case eSpecial_D16S8: params.remap = eRemap_D32S8; break;
-      case eSpecial_ASTC:
-      case eSpecial_EAC:
-      case eSpecial_R5G6B5:
-      case eSpecial_ETC2: params.remap = eRemap_RGBA8; break;
+	  case SpecialFormat::S8:
+      case SpecialFormat::D16S8: params.remap = eRemap_D32S8; break;
+      case SpecialFormat::ASTC:
+      case SpecialFormat::EAC:
+      case SpecialFormat::R5G6B5:
+      case SpecialFormat::ETC2: params.remap = eRemap_RGBA8; break;
       default:
         RDCERR("Don't know how to remap special format %u, falling back to RGBA32",
                format.specialFormat);

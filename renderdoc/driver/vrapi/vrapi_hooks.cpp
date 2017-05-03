@@ -237,8 +237,8 @@ extern "C" {
 							GLuint gl_handle = vrapi_hooks.vrapi_GetTextureSwapChainHandle_real(left_swapchain, 0);
 
 							uint32_t tex_width, tex_height;
-							m_GLDriver->GetInternalHookset().glGetTextureLevelParameterivEXT(gl_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_WIDTH, (GLint*)&tex_width);
-							m_GLDriver->GetInternalHookset().glGetTextureLevelParameterivEXT(gl_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_HEIGHT, (GLint*)&tex_height);
+							m_GLDriver->GetHookset().glGetTextureLevelParameterivEXT(gl_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_WIDTH, (GLint*)&tex_width);
+							m_GLDriver->GetHookset().glGetTextureLevelParameterivEXT(gl_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_HEIGHT, (GLint*)&tex_height);
 
 							width = tex_width;
 							height = tex_height;
@@ -249,10 +249,10 @@ extern "C" {
 							GLuint right_handle = vrapi_hooks.vrapi_GetTextureSwapChainHandle_real(right_swapchain, 0);
 
 							uint32_t left_width, left_height, right_width, right_height;
-							m_GLDriver->GetInternalHookset().glGetTextureLevelParameterivEXT(left_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_WIDTH, (GLint*)&left_width);
-							m_GLDriver->GetInternalHookset().glGetTextureLevelParameterivEXT(left_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_HEIGHT, (GLint*)&left_height);
-							m_GLDriver->GetInternalHookset().glGetTextureLevelParameterivEXT(right_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_WIDTH, (GLint*)&right_width);
-							m_GLDriver->GetInternalHookset().glGetTextureLevelParameterivEXT(right_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_HEIGHT, (GLint*)&right_height);
+							m_GLDriver->GetHookset().glGetTextureLevelParameterivEXT(left_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_WIDTH, (GLint*)&left_width);
+							m_GLDriver->GetHookset().glGetTextureLevelParameterivEXT(left_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_HEIGHT, (GLint*)&left_height);
+							m_GLDriver->GetHookset().glGetTextureLevelParameterivEXT(right_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_WIDTH, (GLint*)&right_width);
+							m_GLDriver->GetHookset().glGetTextureLevelParameterivEXT(right_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_HEIGHT, (GLint*)&right_height);
 
 							RDCASSERT(left_width == right_width);
 							RDCASSERT(left_height == right_height);

@@ -298,22 +298,22 @@ vector<CounterResult> GLReplay::FetchCounters(const vector<GPUCounter> &counters
       {
         for (uint32_t c = 0; c < counters.size(); c++)
         {
-          if (ctx.queries[i].obj[counters[c]])
+          if (ctx.queries[i].obj[(uint32_t)counters[c]])
           {
             GLuint64 data = 0;
-            m_pDriver->glGetQueryObjectui64v(ctx.queries[i].obj[counters[c]], eGL_QUERY_RESULT, &data);
+            m_pDriver->glGetQueryObjectui64v(ctx.queries[i].obj[(uint32_t)counters[c]], eGL_QUERY_RESULT, &data);
 
             double duration = double(data) * nanosToSecs;
 			
             if (m_pDriver->glGetError())
             {
-	      data = (uint64_t)-1;
+	          data = (uint64_t)-1;
               duration = -1;
             }
 
-            if (counters[c] == eCounter_EventGPUDuration)
+            if (counters[c] == GPUCounter::EventGPUDuration)
             {
-              ret.push_back(CounterResult(ctx.queries[i].eventID, eCounter_EventGPUDuration, duration));
+              ret.push_back(CounterResult(ctx.queries[i].eventID, GPUCounter::EventGPUDuration, duration));
             }
             else
               ret.push_back(CounterResult(ctx.queries[i].eventID, counters[c], data));
@@ -329,10 +329,10 @@ vector<CounterResult> GLReplay::FetchCounters(const vector<GPUCounter> &counters
       {
         for (uint32_t c = 0; c < counters.size(); c++)
         {
-          if (ctx.queries[i].obj[counters[c]])
+          if (ctx.queries[i].obj[(uint32_t)counters[c]])
           {
             GLuint data = 0;
-            m_pDriver->glGetQueryObjectuiv(ctx.queries[i].obj[counters[c]], eGL_QUERY_RESULT, &data);
+            m_pDriver->glGetQueryObjectuiv(ctx.queries[i].obj[(uint32_t)counters[c]], eGL_QUERY_RESULT, &data);
 
             double duration = double(data) * nanosToSecs;
 
@@ -342,9 +342,9 @@ vector<CounterResult> GLReplay::FetchCounters(const vector<GPUCounter> &counters
               duration = -1;
             }
 
-            if (counters[c] == eCounter_EventGPUDuration)
+            if (counters[c] == GPUCounter::EventGPUDuration)
             {
-              ret.push_back(CounterResult(ctx.queries[i].eventID, eCounter_EventGPUDuration, duration));
+              ret.push_back(CounterResult(ctx.queries[i].eventID, GPUCounter::EventGPUDuration, duration));
             }
             else
               ret.push_back(CounterResult(ctx.queries[i].eventID, counters[c], data));

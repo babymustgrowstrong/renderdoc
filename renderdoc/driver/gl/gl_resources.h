@@ -28,8 +28,6 @@
 #include "core/resource_manager.h"
 #include "driver/gl/gl_common.h"
 
-#define eGL_BGRA8_EXT		((GLenum)0x93A1)
-
 struct GLHookSet;
 
 size_t GetCompressedByteSize(GLsizei w, GLsizei h, GLsizei d, GLenum internalformat);

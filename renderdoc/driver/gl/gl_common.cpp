@@ -2448,6 +2448,9 @@ void CopyProgramFragDataBindings(const GLHookSet &gl, GLuint progsrc, GLuint pro
       }
       else
       {
+#if ENABLED(RDOC_ANDROID)
+        if (IsGLES && !(strcasecmp(refl->OutputSig[i].varName.c_str(), "out_FragColor") == 0 && idx == 0))
+#endif
         // glBindFragDataLocation is not core GLES, but it is in GL_EXT_blend_func_extended
         // TODO what to do if that extension is not supported
         RDCERR("glBindFragDataLocation is not supported!");
@@ -2517,6 +2520,9 @@ void SerialiseProgramBindings(const GLHookSet &gl, Serialiser *ser, GLuint prog,
           }
           else
           {
+#if ENABLED(RDOC_ANDROID)
+            if (IsGLES && !(strcasecmp(n.c_str(), "out_FragColor") == 0 && idx == 0))
+#endif
             // glBindFragDataLocation is not core GLES, but it is in GL_EXT_blend_func_extended
             // TODO what to do if that extension is not supported
             RDCERR("glBindFragDataLocation is not supported!");

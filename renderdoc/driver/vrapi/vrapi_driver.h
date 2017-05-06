@@ -26,6 +26,10 @@
 #pragma once
 
 #include "core/core.h"
+#include "driver/vrapi/official/VrApi_Types.h"
+#include "driver/gl/official/glcorearb.h"
+
+
 
 
 class WrappedOpenGL;
@@ -38,19 +42,21 @@ public:
 	WrappedVRAPI();
 	~WrappedVRAPI();
 
-	void			StartFrameCapture(void *dev, void *wnd);
-	bool			EndFrameCapture(void *dev, void *wnd);
+	void      StartFrameCapture(void *dev, void *wnd);
+	bool      EndFrameCapture(void *dev, void *wnd);
 
-	void			SetWrappedOpenGL(WrappedOpenGL * wrappedOpenGL);
+	void      SetWrappedOpenGL(WrappedOpenGL * wrappedOpenGL);
 	
 	//-------------------------------------------------------------------------
-	void			SubmitFrame(void * ovrMobile);
+  void      Common_CreateTextureSwapChain(GLuint texture_handle, ovrTextureFormat format, int width, int height, int levels);
+	void      SubmitFrame(void * ovrMobile);
 
 private:
-	WrappedOpenGL *	m_pWrappedOpenGL;
-	
-	LogState		m_State;
-	uint32_t		m_FrameCounter;
+	WrappedOpenGL * m_pWrappedOpenGL;
+  //TODO: WrappedVulkan * m_pWrappedVulkan;
+  
+	LogState    m_State;
+	uint32_t    m_FrameCounter;
 
-	bool			m_AppControlledCapture;
+	bool        m_AppControlledCapture;
 };

@@ -1,7 +1,7 @@
 /******************************************************************************
 * The MIT License (MIT)
 *
-* Copyright (c) 2017 Jimmy Lee
+* Copyright (c) 2017 Baldur Karlsson
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -35,13 +35,14 @@
 
 //-----------------------------------------------------------------------------------------------------------------
 
-typedef ovrMobile *   (*PFN_vrapi_EnterVrMode)(const ovrModeParms *);
-typedef void          (*PFN_vrapi_LeaveVrMode)(ovrMobile *);
-typedef void          (*PFN_vrapi_SubmitFrame)(ovrMobile *, const ovrFrameParms *);
-typedef int           (*PFN_vrapi_GetTextureSwapChainLength)(ovrTextureSwapChain *);
-typedef unsigned int  (*PFN_vrapi_GetTextureSwapChainHandle)(ovrTextureSwapChain *, int);
-typedef int           (*PFN_vrapi_GetSystemPropertyInt)(const ovrJava *, const ovrSystemProperty);
-
+typedef ovrMobile *           (*PFN_vrapi_EnterVrMode)(const ovrModeParms *);
+typedef void                  (*PFN_vrapi_LeaveVrMode)(ovrMobile *);
+typedef void                  (*PFN_vrapi_SubmitFrame)(ovrMobile *, const ovrFrameParms *);
+typedef int                   (*PFN_vrapi_GetTextureSwapChainLength)(ovrTextureSwapChain *);
+typedef unsigned int          (*PFN_vrapi_GetTextureSwapChainHandle)(ovrTextureSwapChain *, int);
+typedef int                   (*PFN_vrapi_GetSystemPropertyInt)(const ovrJava *, const ovrSystemProperty);
+typedef ovrTextureSwapChain * (*PFN_vrapi_CreateTextureSwapChain2)(ovrTextureType, ovrTextureFormat, int, int, int, int);
+typedef ovrTextureSwapChain * (*PFN_vrapi_CreateTextureSwapChain)(ovrTextureType, ovrTextureFormat, int, int, int, bool);
 
 void *           libvrapi_symHandle = RTLD_NEXT;
 WrappedVRAPI *   m_VRAPIDriver = nullptr;
@@ -122,13 +123,15 @@ public:
   }
 
   //---------------------------------------------------------------------------------------------------------
-  PFN_vrapi_EnterVrMode                vrapi_EnterVrMode_real;
-  PFN_vrapi_LeaveVrMode                vrapi_LeaveVrMode_real;
-  PFN_vrapi_SubmitFrame                vrapi_SubmitFrame_real;
+  PFN_vrapi_EnterVrMode               vrapi_EnterVrMode_real;
+  PFN_vrapi_LeaveVrMode               vrapi_LeaveVrMode_real;
+  PFN_vrapi_CreateTextureSwapChain2   vrapi_CreateTextureSwapChain2_real;
+  PFN_vrapi_CreateTextureSwapChain    vrapi_CreateTextureSwapChain_real;
+  PFN_vrapi_SubmitFrame               vrapi_SubmitFrame_real;
 
-  PFN_vrapi_GetTextureSwapChainLength  vrapi_GetTextureSwapChainLength_real;
-  PFN_vrapi_GetTextureSwapChainHandle  vrapi_GetTextureSwapChainHandle_real;
-  PFN_vrapi_GetSystemPropertyInt       vrapi_GetSystemPropertyInt_real;
+  PFN_vrapi_GetTextureSwapChainLength vrapi_GetTextureSwapChainLength_real;
+  PFN_vrapi_GetTextureSwapChainHandle vrapi_GetTextureSwapChainHandle_real;
+  PFN_vrapi_GetSystemPropertyInt      vrapi_GetSystemPropertyInt_real;
 
   bool  m_PopulatedHooks;
   bool  m_HasHooks;
@@ -140,6 +143,10 @@ public:
       vrapi_EnterVrMode_real = (PFN_vrapi_EnterVrMode)dlsym(libvrapi_symHandle, "vrapi_EnterVrMode");
     if (vrapi_LeaveVrMode_real == NULL)
       vrapi_LeaveVrMode_real = (PFN_vrapi_LeaveVrMode)dlsym(libvrapi_symHandle, "vrapi_LeaveVrMode");
+    if (vrapi_CreateTextureSwapChain2_real == NULL)
+      vrapi_CreateTextureSwapChain2_real = (PFN_vrapi_CreateTextureSwapChain2)dlsym(libvrapi_symHandle, "vrapi_CreateTextureSwapChain2");
+    if (vrapi_CreateTextureSwapChain_real == NULL)
+      vrapi_CreateTextureSwapChain_real = (PFN_vrapi_CreateTextureSwapChain)dlsym(libvrapi_symHandle, "vrapi_CreateTextureSwapChain");
     if (vrapi_SubmitFrame_real == NULL)
       vrapi_SubmitFrame_real = (PFN_vrapi_SubmitFrame)dlsym(libvrapi_symHandle, "vrapi_SubmitFrame");
 
@@ -181,7 +188,8 @@ extern "C" {
 
     ovrMobile * ovr = vrapi_hooks.vrapi_EnterVrMode_real(parms);
 
-    RenderDoc::Inst().AddDeviceFrameCapturer(ovr, vrapi_hooks.GetDriver());
+    if (ovr)
+      RenderDoc::Inst().AddDeviceFrameCapturer(ovr, vrapi_hooks.GetDriver());
 
     return ovr;
   }
@@ -193,9 +201,58 @@ extern "C" {
       vrapi_hooks.SetupHooks();
     }
 
-    RenderDoc::Inst().RemoveDeviceFrameCapturer(ovr);
+    if (ovr)
+      RenderDoc::Inst().RemoveDeviceFrameCapturer(ovr);
 
     vrapi_hooks.vrapi_LeaveVrMode_real(ovr);
+  }
+
+  __attribute__((visibility("default"))) ovrTextureSwapChain * vrapi_CreateTextureSwapChain2(ovrTextureType type,
+    ovrTextureFormat format, int width, int height, int levels, int bufferCount)
+  {
+    if (    vrapi_hooks.vrapi_CreateTextureSwapChain2_real == nullptr
+        || vrapi_hooks.vrapi_GetTextureSwapChainHandle_real == nullptr
+        || vrapi_hooks.vrapi_GetTextureSwapChainLength_real == nullptr)
+    {
+      vrapi_hooks.SetupHooks();
+    }
+
+    ovrTextureSwapChain * texture_swapchain = vrapi_hooks.vrapi_CreateTextureSwapChain2_real(type, format, width, height, levels, bufferCount);
+
+    int tex_count = vrapi_hooks.vrapi_GetTextureSwapChainLength_real(texture_swapchain);
+
+    for (int i = 0; i < tex_count; ++i)
+    {
+      GLuint tex = vrapi_hooks.vrapi_GetTextureSwapChainHandle_real(texture_swapchain, i);
+
+      vrapi_hooks.GetDriver()->Common_CreateTextureSwapChain(tex, format, width, height, levels);
+    }
+
+    return texture_swapchain;
+  }
+
+  __attribute__((visibility("default"))) ovrTextureSwapChain * vrapi_CreateTextureSwapChain(ovrTextureType type,
+    ovrTextureFormat format, int width, int height, int levels, bool buffered)
+  {
+    if (    vrapi_hooks.vrapi_CreateTextureSwapChain_real == nullptr
+        ||  vrapi_hooks.vrapi_GetTextureSwapChainHandle_real == nullptr
+        ||  vrapi_hooks.vrapi_GetTextureSwapChainLength_real == nullptr)
+    {
+      vrapi_hooks.SetupHooks();
+    }
+
+    ovrTextureSwapChain * texture_swapchain = vrapi_hooks.vrapi_CreateTextureSwapChain_real(type, format, width, height, levels, buffered);
+
+    int tex_count = vrapi_hooks.vrapi_GetTextureSwapChainLength_real(texture_swapchain);
+
+    for (int i = 0; i < tex_count; ++i)
+    {
+      GLuint tex = vrapi_hooks.vrapi_GetTextureSwapChainHandle_real(texture_swapchain, i);
+
+      vrapi_hooks.GetDriver()->Common_CreateTextureSwapChain(tex, format, width, height, levels);
+    }
+
+    return texture_swapchain;
   }
 
   __attribute__((visibility("default"))) void vrapi_SubmitFrame(ovrMobile * ovr, const ovrFrameParms * parms)
@@ -208,7 +265,6 @@ extern "C" {
 	    vrapi_hooks.SetupHooks();
     }
 
-		
     if (m_GLDriver)
     {
       uint32_t width = 2048;

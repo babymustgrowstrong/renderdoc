@@ -114,6 +114,7 @@ private:
 
   friend class GLReplay;
   friend class GLResourceManager;
+  friend class WrappedVRAPI;
 
   vector<DebugMessage> m_DebugMessages;
   void Serialise_DebugMessages();
@@ -541,7 +542,6 @@ public:
   GLResourceManager *GetResourceManager() { return m_ResourceManager; }
   ResourceId GetDeviceResourceID() { return m_DeviceResourceID; }
   ResourceId GetContextResourceID() { return m_ContextResourceID; }
-  LogState GetState() { return m_State; }
   GLReplay *GetReplay() { return &m_Replay; }
   void SetDriverType(RDCDriver type) { m_DriverType = type; }
   bool isGLESMode() { return m_DriverType == RDC_OpenGLES; }

@@ -1472,6 +1472,7 @@ void APIENTRY _glGetTexImage(GLenum target, GLint level, GLenum format, GLenum t
 
 void APIENTRY _glGetCompressedTexImage(GLenum target, GLint level, GLvoid * pixels)
 {
+  //render texture to framebuffer, then call glGetTexImage, and then re-compress the texture...
   //on second thought, let's just do nothing for now
   RDCWARN("calling unimplemented function glGetCompressedTexImage, function skipped");
 }

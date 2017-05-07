@@ -947,8 +947,6 @@ static const format_data formats[] = {
     {eGL_RGBA16UI, eGL_UNSIGNED_INT, 4, 16, 0, 0},
     {eGL_RGBA32I, eGL_INT, 4, 32, 0, 0},
     {eGL_RGBA32UI, eGL_UNSIGNED_INT, 4, 32, 0, 0},
-	{eGL_BGRA_EXT, eGL_UNSIGNED_NORMALIZED, 4, 8, 0, 0},
-	{eGL_BGRA8_EXT, eGL_UNSIGNED_NORMALIZED, 4, 8, 0, 0},
 
     {eGL_BGRA8_EXT, eGL_UNSIGNED_BYTE, 4, 8, 0, 0},
 

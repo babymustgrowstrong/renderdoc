@@ -24,24 +24,20 @@
 
 #include "vrapi_driver.h"
 
-
-
 extern ReplayStatus GLES_CreateReplayDevice(const char *logfile, IReplayDriver **driver);
-
 
 //-------------------------------------------------------------------------------------------------------
 ReplayStatus VrApiCreateReplayDevice(const char *logfile, IReplayDriver **driver);
 
 static DriverRegistration VrApiDriverRegistration(RDC_VRAPI, "GearVR", &VrApiCreateReplayDevice);
 
-
 //-------------------------------------------------------------------------------------------------------
 ReplayStatus VrApiCreateReplayDevice(const char *logfile, IReplayDriver **driver)
 {
-	IReplayDriver *	gles_replaydriver = nullptr;
-	ReplayStatus	gles_replaystatus = GLES_CreateReplayDevice(logfile, &gles_replaydriver);
+  IReplayDriver *gles_replaydriver = nullptr;
+  ReplayStatus gles_replaystatus = GLES_CreateReplayDevice(logfile, &gles_replaydriver);
 
-	*driver = gles_replaydriver;
+  *driver = gles_replaydriver;
 
-	return gles_replaystatus;
+  return gles_replaystatus;
 }

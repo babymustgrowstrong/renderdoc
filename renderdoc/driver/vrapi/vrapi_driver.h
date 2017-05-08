@@ -54,9 +54,6 @@ public:
 private:
 	WrappedOpenGL * m_pWrappedOpenGL;
   //TODO: WrappedVulkan * m_pWrappedVulkan;
-  
-	LogState    m_State;
-	uint32_t    m_FrameCounter;
 
-	bool        m_AppControlledCapture;
+	bool      m_AppControlledCapture;
 };

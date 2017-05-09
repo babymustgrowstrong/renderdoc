@@ -73,7 +73,6 @@ string ToStrHelper<false, RDCDriver>::Get(const RDCDriver &el)
     case RDC_D3D9: return "D3D9";
     case RDC_Image: return "Image";
     case RDC_Vulkan: return "Vulkan";
-	case RDC_VRAPI: return "GearVR";
     default: break;
   }
 

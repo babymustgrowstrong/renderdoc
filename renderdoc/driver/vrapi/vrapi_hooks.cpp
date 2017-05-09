@@ -29,12 +29,9 @@
 #include "driver/gl/gl_hooks_linux_shared.h"
 #include "hooks/hooks.h"
 #include "official/VrApi_Ext.h"
-
 #include "official/VrApi_Types.h"
-#include "vrapi_driver.h"
 
 //-----------------------------------------------------------------------------------------------------------------
-
 typedef ovrMobile *(*PFN_vrapi_EnterVrMode)(const ovrModeParms *);
 typedef void (*PFN_vrapi_LeaveVrMode)(ovrMobile *);
 typedef void (*PFN_vrapi_SubmitFrame)(ovrMobile *, const ovrFrameParms *);
@@ -46,35 +43,28 @@ typedef ovrTextureSwapChain *(*PFN_vrapi_CreateTextureSwapChain2)(ovrTextureType
 typedef ovrTextureSwapChain *(*PFN_vrapi_CreateTextureSwapChain)(ovrTextureType, ovrTextureFormat,
                                                                  int, int, int, bool);
 
+//-----------------------------------------------------------------------------------------------------------------
 void *libvrapi_symHandle = RTLD_NEXT;
-WrappedVRAPI *m_VRAPIDriver = nullptr;
 
 //-----------------------------------------------------------------------------------------------------------------
 class VRAPIHook : LibraryHook
 {
 public:
   VRAPIHook()
-      : vrapi_EnterVrMode_real(nullptr),
-        vrapi_LeaveVrMode_real(nullptr),
-        vrapi_SubmitFrame_real(nullptr),
-        vrapi_GetTextureSwapChainLength_real(nullptr),
-        vrapi_GetTextureSwapChainHandle_real(nullptr),
-        vrapi_GetSystemPropertyInt_real(nullptr),
+      : vrapi_EnterVrMode_real(NULL),
+        vrapi_LeaveVrMode_real(NULL),
+        vrapi_SubmitFrame_real(NULL),
+        vrapi_GetTextureSwapChainLength_real(NULL),
+        vrapi_GetTextureSwapChainHandle_real(NULL),
+        vrapi_GetSystemPropertyInt_real(NULL),
         m_PopulatedHooks(false),
         m_HasHooks(false)
   {
     LibraryHooks::GetInstance().RegisterHook("libvrapi.so", this);
 
     m_EnabledHooks = true;
-
-    m_VRAPIDriver = nullptr;
   }
-  ~VRAPIHook()
-  {
-    delete m_GLDriver;
-    m_VRAPIDriver = nullptr;
-  }
-
+  ~VRAPIHook() {}
   bool CreateHooks(const char *libName)
   {
     if(!m_EnabledHooks)
@@ -99,17 +89,6 @@ public:
   {
     if(RenderDoc::Inst().IsReplayApp())
       SetupHooks();
-  }
-
-  WrappedVRAPI *GetDriver()
-  {
-    if(m_VRAPIDriver == nullptr)
-    {
-      m_VRAPIDriver = new WrappedVRAPI();
-      m_VRAPIDriver->SetWrappedOpenGL(m_GLDriver);
-    }
-
-    return m_VRAPIDriver;
   }
 
   static void libHooked(void *realLib) { libvrapi_symHandle = realLib; }
@@ -156,38 +135,96 @@ public:
       vrapi_GetSystemPropertyInt_real =
           (PFN_vrapi_GetSystemPropertyInt)dlsym(libvrapi_symHandle, "vrapi_GetSystemPropertyInt");
 
-    return vrapi_SubmitFrame_real != nullptr;
+    return vrapi_SubmitFrame_real != NULL;
   }
 
 } vrapi_hooks;
+
+//-----------------------------------------------------------------------------------------------------------------
+GLenum GetInternalFormat(ovrTextureFormat ovr_format)
+{
+  GLenum internalFormat = eGL_RGBA8;
+
+  GLenum conversion_table[] = {
+      eGL_RGBA8,                // VRAPI_TEXTURE_FORMAT_NONE,
+      eGL_RGB565,               // VRAPI_TEXTURE_FORMAT_565,
+      eGL_RGB5_A1,              // VRAPI_TEXTURE_FORMAT_5551,
+      eGL_RGBA4,                // VRAPI_TEXTURE_FORMAT_4444,
+      eGL_RGBA8,                // VRAPI_TEXTURE_FORMAT_8888,
+      eGL_SRGB8_ALPHA8,         // VRAPI_TEXTURE_FORMAT_8888_sRGB,
+      eGL_RGBA16F,              // VRAPI_TEXTURE_FORMAT_RGBA16F,
+      eGL_DEPTH_COMPONENT16,    // VRAPI_TEXTURE_FORMAT_DEPTH_16,
+      eGL_DEPTH_COMPONENT24,    // VRAPI_TEXTURE_FORMAT_DEPTH_24,
+      eGL_DEPTH24_STENCIL8      // VRAPI_TEXTURE_FORMAT_DEPTH_24_STENCIL_8,
+  };
+
+  RDCASSERT(ovr_format < sizeof(conversion_table) / sizeof(conversion_table[0]));
+
+  if(ovr_format < sizeof(conversion_table) / sizeof(conversion_table[0]))
+  {
+    internalFormat = conversion_table[ovr_format];
+  }
+
+  return internalFormat;
+}
+
+TextureCategory GetTextureCategory(ovrTextureFormat ovr_format)
+{
+  TextureCategory category = TextureCategory::ColorTarget | TextureCategory::SwapBuffer;
+
+  TextureCategory conversion_table[] = {
+      TextureCategory::NoFlags,                                      // VRAPI_TEXTURE_FORMAT_NONE,
+      TextureCategory::ColorTarget | TextureCategory::SwapBuffer,    // VRAPI_TEXTURE_FORMAT_565,
+      TextureCategory::ColorTarget | TextureCategory::SwapBuffer,    // VRAPI_TEXTURE_FORMAT_5551,
+      TextureCategory::ColorTarget | TextureCategory::SwapBuffer,    // VRAPI_TEXTURE_FORMAT_4444,
+      TextureCategory::ColorTarget | TextureCategory::SwapBuffer,    // VRAPI_TEXTURE_FORMAT_8888,
+      TextureCategory::ColorTarget | TextureCategory::SwapBuffer,    // VRAPI_TEXTURE_FORMAT_8888_sRGB,
+      TextureCategory::ColorTarget | TextureCategory::SwapBuffer,    // VRAPI_TEXTURE_FORMAT_RGBA16F,
+      TextureCategory::DepthTarget,    // VRAPI_TEXTURE_FORMAT_DEPTH_16,
+      TextureCategory::DepthTarget,    // VRAPI_TEXTURE_FORMAT_DEPTH_24,
+      TextureCategory::DepthTarget     // VRAPI_TEXTURE_FORMAT_DEPTH_24_STENCIL_8,
+  };
+
+  RDCASSERT(ovr_format < sizeof(conversion_table) / sizeof(conversion_table[0]));
+
+  if(ovr_format < sizeof(conversion_table) / sizeof(conversion_table[0]))
+  {
+    category = conversion_table[ovr_format];
+  }
+
+  return category;
+}
 
 //-----------------------------------------------------------------------------------------------------------------
 extern "C" {
 
 __attribute__((visibility("default"))) ovrMobile *vrapi_EnterVrMode(const ovrModeParms *parms)
 {
-  if(vrapi_hooks.vrapi_EnterVrMode_real == nullptr)
+  if(vrapi_hooks.vrapi_EnterVrMode_real == NULL)
   {
     vrapi_hooks.SetupHooks();
   }
 
   ovrMobile *ovr = vrapi_hooks.vrapi_EnterVrMode_real(parms);
 
-  if(ovr)
-    RenderDoc::Inst().AddDeviceFrameCapturer(ovr, vrapi_hooks.GetDriver());
+  if(m_GLDriver)
+  {
+    void *ctx = m_GLDriver->GetCtx();
+    void *wndHandle = ovr;
+
+    RenderDoc::Inst().AddFrameCapturer(ctx, wndHandle, m_GLDriver);
+    RenderDoc::Inst().SetActiveWindow(ctx, wndHandle);
+  }
 
   return ovr;
 }
 
 __attribute__((visibility("default"))) void vrapi_LeaveVrMode(ovrMobile *ovr)
 {
-  if(vrapi_hooks.vrapi_LeaveVrMode_real == nullptr)
+  if(vrapi_hooks.vrapi_LeaveVrMode_real == NULL)
   {
     vrapi_hooks.SetupHooks();
   }
-
-  if(ovr)
-    RenderDoc::Inst().RemoveDeviceFrameCapturer(ovr);
 
   vrapi_hooks.vrapi_LeaveVrMode_real(ovr);
 }
@@ -195,9 +232,9 @@ __attribute__((visibility("default"))) void vrapi_LeaveVrMode(ovrMobile *ovr)
 __attribute__((visibility("default"))) ovrTextureSwapChain *vrapi_CreateTextureSwapChain2(
     ovrTextureType type, ovrTextureFormat format, int width, int height, int levels, int bufferCount)
 {
-  if(vrapi_hooks.vrapi_CreateTextureSwapChain2_real == nullptr ||
-     vrapi_hooks.vrapi_GetTextureSwapChainHandle_real == nullptr ||
-     vrapi_hooks.vrapi_GetTextureSwapChainLength_real == nullptr)
+  if(vrapi_hooks.vrapi_CreateTextureSwapChain2_real == NULL ||
+     vrapi_hooks.vrapi_GetTextureSwapChainHandle_real == NULL ||
+     vrapi_hooks.vrapi_GetTextureSwapChainLength_real == NULL)
   {
     vrapi_hooks.SetupHooks();
   }
@@ -207,11 +244,16 @@ __attribute__((visibility("default"))) ovrTextureSwapChain *vrapi_CreateTextureS
 
   int tex_count = vrapi_hooks.vrapi_GetTextureSwapChainLength_real(texture_swapchain);
 
-  for(int i = 0; i < tex_count; ++i)
+  if(m_GLDriver)
   {
-    GLuint tex = vrapi_hooks.vrapi_GetTextureSwapChainHandle_real(texture_swapchain, i);
+    for(int i = 0; i < tex_count; ++i)
+    {
+      GLuint tex = vrapi_hooks.vrapi_GetTextureSwapChainHandle_real(texture_swapchain, i);
+      GLenum internalformat = GetInternalFormat(format);
+      TextureCategory creationFlags = GetTextureCategory(format);
 
-    vrapi_hooks.GetDriver()->Common_CreateTextureSwapChain(tex, format, width, height, levels);
+      m_GLDriver->CreateVRAPITextureSwapChain(tex, internalformat, width, height, creationFlags);
+    }
   }
 
   return texture_swapchain;
@@ -220,9 +262,9 @@ __attribute__((visibility("default"))) ovrTextureSwapChain *vrapi_CreateTextureS
 __attribute__((visibility("default"))) ovrTextureSwapChain *vrapi_CreateTextureSwapChain(
     ovrTextureType type, ovrTextureFormat format, int width, int height, int levels, bool buffered)
 {
-  if(vrapi_hooks.vrapi_CreateTextureSwapChain_real == nullptr ||
-     vrapi_hooks.vrapi_GetTextureSwapChainHandle_real == nullptr ||
-     vrapi_hooks.vrapi_GetTextureSwapChainLength_real == nullptr)
+  if(vrapi_hooks.vrapi_CreateTextureSwapChain_real == NULL ||
+     vrapi_hooks.vrapi_GetTextureSwapChainHandle_real == NULL ||
+     vrapi_hooks.vrapi_GetTextureSwapChainLength_real == NULL)
   {
     vrapi_hooks.SetupHooks();
   }
@@ -235,8 +277,10 @@ __attribute__((visibility("default"))) ovrTextureSwapChain *vrapi_CreateTextureS
   for(int i = 0; i < tex_count; ++i)
   {
     GLuint tex = vrapi_hooks.vrapi_GetTextureSwapChainHandle_real(texture_swapchain, i);
+    GLenum internalformat = GetInternalFormat(format);
+    TextureCategory creationFlags = GetTextureCategory(format);
 
-    vrapi_hooks.GetDriver()->Common_CreateTextureSwapChain(tex, format, width, height, levels);
+    m_GLDriver->CreateVRAPITextureSwapChain(tex, internalformat, width, height, creationFlags);
   }
 
   return texture_swapchain;
@@ -245,86 +289,23 @@ __attribute__((visibility("default"))) ovrTextureSwapChain *vrapi_CreateTextureS
 __attribute__((visibility("default"))) void vrapi_SubmitFrame(ovrMobile *ovr,
                                                               const ovrFrameParms *parms)
 {
-  if(vrapi_hooks.vrapi_SubmitFrame_real == nullptr ||
-     vrapi_hooks.vrapi_GetTextureSwapChainLength_real == nullptr ||
-     vrapi_hooks.vrapi_GetTextureSwapChainHandle_real == nullptr ||
-     vrapi_hooks.vrapi_GetSystemPropertyInt_real == nullptr)
+  if(vrapi_hooks.vrapi_SubmitFrame_real == NULL || vrapi_hooks.vrapi_GetSystemPropertyInt_real == NULL)
   {
     vrapi_hooks.SetupHooks();
   }
 
   if(m_GLDriver)
   {
-    uint32_t width = 2048;
-    uint32_t height = 1024;
+    SCOPED_LOCK(glLock);
 
-    if(parms)
-    {
-      width = vrapi_hooks.vrapi_GetSystemPropertyInt_real(
-                  &parms->Java, VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_WIDTH) *
-              2;
-      height = vrapi_hooks.vrapi_GetSystemPropertyInt_real(
-          &parms->Java, VRAPI_SYS_PROP_SUGGESTED_EYE_TEXTURE_HEIGHT);
+    int width = vrapi_hooks.vrapi_GetSystemPropertyInt_real(&parms->Java,
+                                                            VRAPI_SYS_PROP_DISPLAY_PIXELS_WIDE);
+    int height = vrapi_hooks.vrapi_GetSystemPropertyInt_real(&parms->Java,
+                                                             VRAPI_SYS_PROP_DISPLAY_PIXELS_HIGH);
 
-      // this is just an inline function call, function definition is in VrApi_Ext.h
-      const ovrFrameParms *frame_params =
-          vrapi_GetFrameParmsConst((const ovrFrameParmsExtBase *)parms);
-
-      if(frame_params->LayerCount > 0)
-      {
-        // assuming layer 0 is the main layer
-        ovrTextureSwapChain *left_swapchain =
-            frame_params->Layers[0].Textures[VRAPI_FRAME_LAYER_EYE_LEFT].ColorTextureSwapChain;
-        ovrTextureSwapChain *right_swapchain =
-            frame_params->Layers[0].Textures[VRAPI_FRAME_LAYER_EYE_RIGHT].ColorTextureSwapChain;
-
-        if(left_swapchain != nullptr || right_swapchain != nullptr)
-        {
-          SCOPED_LOCK(glLock);
-
-          if(left_swapchain == right_swapchain)
-          {
-            GLuint gl_handle = vrapi_hooks.vrapi_GetTextureSwapChainHandle_real(left_swapchain, 0);
-
-            uint32_t tex_width, tex_height;
-            m_GLDriver->GetHookset().glGetTextureLevelParameterivEXT(
-                gl_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_WIDTH, (GLint *)&tex_width);
-            m_GLDriver->GetHookset().glGetTextureLevelParameterivEXT(
-                gl_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_HEIGHT, (GLint *)&tex_height);
-
-            width = tex_width;
-            height = tex_height;
-          }
-          else
-          {
-            GLuint left_handle = vrapi_hooks.vrapi_GetTextureSwapChainHandle_real(left_swapchain, 0);
-            GLuint right_handle =
-                vrapi_hooks.vrapi_GetTextureSwapChainHandle_real(right_swapchain, 0);
-
-            uint32_t left_width, left_height, right_width, right_height;
-            m_GLDriver->GetHookset().glGetTextureLevelParameterivEXT(
-                left_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_WIDTH, (GLint *)&left_width);
-            m_GLDriver->GetHookset().glGetTextureLevelParameterivEXT(
-                left_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_HEIGHT, (GLint *)&left_height);
-            m_GLDriver->GetHookset().glGetTextureLevelParameterivEXT(
-                right_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_WIDTH, (GLint *)&right_width);
-            m_GLDriver->GetHookset().glGetTextureLevelParameterivEXT(
-                right_handle, eGL_TEXTURE_2D, 0, eGL_TEXTURE_HEIGHT, (GLint *)&right_height);
-
-            RDCASSERT(left_width == right_width);
-            RDCASSERT(left_height == right_height);
-
-            width = left_width + right_width;
-            height = left_height;
-          }
-        }
-      }
-    }
-
-    m_GLDriver->WindowSize(nullptr, width, height);
+    m_GLDriver->WindowSize(ovr, width, height);
+    m_GLDriver->SwapBuffers(ovr);
   }
-
-  vrapi_hooks.GetDriver()->SubmitFrame(ovr);
 
   vrapi_hooks.vrapi_SubmitFrame_real(ovr, parms);
 }

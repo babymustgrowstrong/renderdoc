@@ -107,7 +107,6 @@ enum RDCDriver
   RDC_Image = 7,
   RDC_Vulkan = 8,
   RDC_OpenGLES = 9,
-  RDC_VRAPI = 10,
   RDC_Custom = 100000,
   RDC_Custom0 = RDC_Custom,
   RDC_Custom1,

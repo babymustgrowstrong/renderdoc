@@ -57,6 +57,13 @@ else()
             gl_hooks_egl_pass.cpp
             gl_replay_egl.cpp)
     endif()
+    if(ENABLE_VRAPI)
+	list(APPEND sources
+	    official/VrApi_Config.h
+	    official/VrApi_Ext.h
+	    official/VrApi_Types.h
+	    gl_hooks_vrapi.cpp)
+    endif()
 endif()
 
 if(ANDROID)

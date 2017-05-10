@@ -114,7 +114,6 @@ private:
 
   friend class GLReplay;
   friend class GLResourceManager;
-  friend class WrappedVRAPI;
 
   vector<DebugMessage> m_DebugMessages;
   void Serialise_DebugMessages();

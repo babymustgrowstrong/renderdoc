@@ -1503,6 +1503,15 @@ void APIENTRY _glDrawRangeElementsBaseVertex(GLenum mode, GLuint start, GLuint e
     RDCERR("glDrawRangeElementsBaseVertex is not supported! No draw will be called!");
 }
 
+void APIENTRY _glGetQueryObjectui64v(GLuint id, GLenum pname, GLuint64 *params)
+{
+  if(params)
+  {
+    GLuint params_32;
+    hookset->glGetQueryObjectuiv(id, pname, &params_32);
+    *params = params_32;
+  }
+}
 #pragma endregion
 
 void EmulateRequiredExtensions(GLHookSet *hooks)
@@ -1551,6 +1560,14 @@ void EmulateRequiredExtensions(GLHookSet *hooks)
       EMULATE_FUNC(glDrawElementsBaseVertex);
       EMULATE_FUNC(glDrawElementsInstancedBaseVertex);
       EMULATE_FUNC(glDrawRangeElementsBaseVertex);
+    }
+
+    // this technically requires EXT_disjoint_timer_query, but perhaps because of how recent
+    // the extension was revised, glGetQueryObjectui64v might not be present despite the
+    // extension being supported
+    if(hooks->glGetQueryObjectui64v == NULL)
+    {
+      EMULATE_FUNC(glGetQueryObjectui64v);
     }
   }
 

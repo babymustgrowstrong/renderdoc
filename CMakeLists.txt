@@ -83,7 +83,6 @@ option(ENABLE_GLES "Enable GL ES driver" OFF)
 option(ENABLE_VULKAN "Enable Vulkan driver" ON)
 option(ENABLE_RENDERDOCCMD "Enable renderdoccmd" ON)
 option(ENABLE_QRENDERDOC "Enable qrenderdoc" ON)
-option(ENABLE_VRAPI "Enable GearVR driver" OFF)
 
 option(ENABLE_XLIB "Enable xlib windowing support" ON)
 option(ENABLE_XCB "Enable xcb windowing support" ON)
@@ -123,7 +122,6 @@ if(ANDROID)
     endif()
     set(ENABLE_GL OFF CACHE BOOL "" FORCE)
     set(ENABLE_GLES ON CACHE BOOL "" FORCE)
-	set(ENABLE_VRAPI ON CACHE BOOL "" FORCE)
 
     # Android doesn't support the Qt UI for obvious reasons
     message(STATUS "Disabling qrenderdoc for android build")
@@ -161,10 +159,6 @@ endif()
 
 if(ENABLE_VULKAN)
     add_definitions(-DRENDERDOC_SUPPORT_VULKAN)
-endif()
-
-if(ENABLE_VRAPI)
-    add_definitions(-DRENDERDOC_SUPPORT_VRAPI)
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")

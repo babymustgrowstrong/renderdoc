@@ -23,12 +23,11 @@
  ******************************************************************************/
 
 #include <dlfcn.h>
-#include "common/threading.h"
+#include "core/core.h"
 #include "driver/gl/gl_common.h"
 #include "driver/gl/gl_driver.h"
 #include "driver/gl/gl_hooks_linux_shared.h"
 #include "hooks/hooks.h"
-#include "official/VrApi_Ext.h"
 #include "official/VrApi_Types.h"
 
 //-----------------------------------------------------------------------------------------------------------------
@@ -199,30 +198,7 @@ __attribute__((visibility("default"))) ovrMobile *vrapi_EnterVrMode(const ovrMod
     vrapi_hooks.SetupHooks();
   }
 
-  ovrMobile *ovr = vrapi_hooks.vrapi_EnterVrMode_real(parms);
-
-  if(m_GLDriver)
-  {
-    void *ctx = m_GLDriver->GetCtx();
-    void *wndHandle = ovr;
-
-    RenderDoc::Inst().AddFrameCapturer(ctx, wndHandle, m_GLDriver);
-    RenderDoc::Inst().SetActiveWindow(ctx, wndHandle);
-
-#if ENABLED(RDOC_ANDROID)
-    if(parms->Flags & VRAPI_MODE_FLAG_NATIVE_WINDOW)
-    {
-      ANativeWindow *window = (ANativeWindow *)parms->WindowSurface;
-
-      int32_t width = ANativeWindow_getWidth(window);
-      int32_t height = ANativeWindow_getHeight(window);
-
-      m_GLDriver->WindowSize(ovr, width, height);
-    }
-#endif
-  }
-
-  return ovr;
+  return vrapi_hooks.vrapi_EnterVrMode_real(parms);
 }
 
 __attribute__((visibility("default"))) void vrapi_LeaveVrMode(ovrMobile *ovr)

@@ -31,8 +31,6 @@
 #include "official/VrApi_Types.h"
 
 //-----------------------------------------------------------------------------------------------------------------
-typedef ovrMobile *(*PFN_vrapi_EnterVrMode)(const ovrModeParms *);
-typedef void (*PFN_vrapi_LeaveVrMode)(ovrMobile *);
 typedef void (*PFN_vrapi_SubmitFrame)(ovrMobile *, const ovrFrameParms *);
 typedef int (*PFN_vrapi_GetTextureSwapChainLength)(ovrTextureSwapChain *);
 typedef unsigned int (*PFN_vrapi_GetTextureSwapChainHandle)(ovrTextureSwapChain *, int);
@@ -50,9 +48,7 @@ class VRAPIHook : LibraryHook
 {
 public:
   VRAPIHook()
-      : vrapi_EnterVrMode_real(NULL),
-        vrapi_LeaveVrMode_real(NULL),
-        vrapi_SubmitFrame_real(NULL),
+      : vrapi_SubmitFrame_real(NULL),
         vrapi_GetTextureSwapChainLength_real(NULL),
         vrapi_GetTextureSwapChainHandle_real(NULL),
         vrapi_GetSystemPropertyInt_real(NULL),
@@ -92,8 +88,6 @@ public:
 
   static void libHooked(void *realLib) { libvrapi_symHandle = realLib; }
   //---------------------------------------------------------------------------------------------------------
-  PFN_vrapi_EnterVrMode vrapi_EnterVrMode_real;
-  PFN_vrapi_LeaveVrMode vrapi_LeaveVrMode_real;
   PFN_vrapi_CreateTextureSwapChain2 vrapi_CreateTextureSwapChain2_real;
   PFN_vrapi_CreateTextureSwapChain vrapi_CreateTextureSwapChain_real;
   PFN_vrapi_SubmitFrame vrapi_SubmitFrame_real;
@@ -108,12 +102,6 @@ public:
 
   bool SetupHooks()
   {
-    if(vrapi_EnterVrMode_real == NULL)
-      vrapi_EnterVrMode_real =
-          (PFN_vrapi_EnterVrMode)dlsym(libvrapi_symHandle, "vrapi_EnterVrMode");
-    if(vrapi_LeaveVrMode_real == NULL)
-      vrapi_LeaveVrMode_real =
-          (PFN_vrapi_LeaveVrMode)dlsym(libvrapi_symHandle, "vrapi_LeaveVrMode");
     if(vrapi_CreateTextureSwapChain2_real == NULL)
       vrapi_CreateTextureSwapChain2_real = (PFN_vrapi_CreateTextureSwapChain2)dlsym(
           libvrapi_symHandle, "vrapi_CreateTextureSwapChain2");
@@ -191,26 +179,6 @@ GLenum GetTextureType(ovrTextureType ovr_tex_type)
 //-----------------------------------------------------------------------------------------------------------------
 extern "C" {
 
-__attribute__((visibility("default"))) ovrMobile *vrapi_EnterVrMode(const ovrModeParms *parms)
-{
-  if(vrapi_hooks.vrapi_EnterVrMode_real == NULL)
-  {
-    vrapi_hooks.SetupHooks();
-  }
-
-  return vrapi_hooks.vrapi_EnterVrMode_real(parms);
-}
-
-__attribute__((visibility("default"))) void vrapi_LeaveVrMode(ovrMobile *ovr)
-{
-  if(vrapi_hooks.vrapi_LeaveVrMode_real == NULL)
-  {
-    vrapi_hooks.SetupHooks();
-  }
-
-  vrapi_hooks.vrapi_LeaveVrMode_real(ovr);
-}
-
 __attribute__((visibility("default"))) ovrTextureSwapChain *vrapi_CreateTextureSwapChain2(
     ovrTextureType type, ovrTextureFormat format, int width, int height, int levels, int bufferCount)
 {
@@ -224,10 +192,12 @@ __attribute__((visibility("default"))) ovrTextureSwapChain *vrapi_CreateTextureS
   ovrTextureSwapChain *texture_swapchain = vrapi_hooks.vrapi_CreateTextureSwapChain2_real(
       type, format, width, height, levels, bufferCount);
 
-  int tex_count = vrapi_hooks.vrapi_GetTextureSwapChainLength_real(texture_swapchain);
-
   if(m_GLDriver)
   {
+    int tex_count = vrapi_hooks.vrapi_GetTextureSwapChainLength_real(texture_swapchain);
+
+    SCOPED_LOCK(glLock);
+
     for(int i = 0; i < tex_count; ++i)
     {
       GLuint tex = vrapi_hooks.vrapi_GetTextureSwapChainHandle_real(texture_swapchain, i);
@@ -254,15 +224,20 @@ __attribute__((visibility("default"))) ovrTextureSwapChain *vrapi_CreateTextureS
   ovrTextureSwapChain *texture_swapchain =
       vrapi_hooks.vrapi_CreateTextureSwapChain_real(type, format, width, height, levels, buffered);
 
-  int tex_count = vrapi_hooks.vrapi_GetTextureSwapChainLength_real(texture_swapchain);
-
-  for(int i = 0; i < tex_count; ++i)
+  if(m_GLDriver)
   {
-    GLuint tex = vrapi_hooks.vrapi_GetTextureSwapChainHandle_real(texture_swapchain, i);
-    GLenum internalformat = GetInternalFormat(format);
-    GLenum textureType = GetTextureType(type);
+    int tex_count = vrapi_hooks.vrapi_GetTextureSwapChainLength_real(texture_swapchain);
 
-    m_GLDriver->CreateVRAPITextureSwapChain(tex, textureType, internalformat, width, height);
+    SCOPED_LOCK(glLock);
+
+    for(int i = 0; i < tex_count; ++i)
+    {
+      GLuint tex = vrapi_hooks.vrapi_GetTextureSwapChainHandle_real(texture_swapchain, i);
+      GLenum internalformat = GetInternalFormat(format);
+      GLenum textureType = GetTextureType(type);
+
+      m_GLDriver->CreateVRAPITextureSwapChain(tex, textureType, internalformat, width, height);
+    }
   }
 
   return texture_swapchain;

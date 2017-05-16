@@ -236,11 +236,11 @@ public:
                                            EGL_PBUFFER_BIT | EGL_WINDOW_BIT,
                                            EGL_NONE};
 
-    PFN_eglChooseConfig eglChooseConfig = (PFN_eglChooseConfig)dlsym(RTLD_NEXT, "eglChooseConfig");
+    PFN_eglChooseConfig eglChooseConfig = (PFN_eglChooseConfig)dlsym(libGLdlsymHandle, "eglChooseConfig");
     PFN_eglCreateWindowSurface eglCreateWindowSurface =
-        (PFN_eglCreateWindowSurface)dlsym(RTLD_NEXT, "eglCreateWindowSurface");
+        (PFN_eglCreateWindowSurface)dlsym(libGLdlsymHandle, "eglCreateWindowSurface");
     PFN_eglCreatePbufferSurface eglCreatePbufferSurface =
-        (PFN_eglCreatePbufferSurface)dlsym(RTLD_NEXT, "eglCreatePbufferSurface");
+        (PFN_eglCreatePbufferSurface)dlsym(libGLdlsymHandle, "eglCreatePbufferSurface");
 
     EGLint numConfigs;
     EGLConfig config;

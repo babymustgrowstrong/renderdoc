@@ -61,6 +61,8 @@ PFN_eglCreateWindowSurface eglCreateWindowSurfaceProc = NULL;
 PFN_eglChooseConfig eglChooseConfigProc = NULL;
 PFN_eglGetProcAddress eglGetProcAddressProc = NULL;
 
+extern void *libGLdlsymHandle;
+
 const GLHookSet &GetRealGLFunctionsEGL();
 GLPlatform &GetGLPlatformEGL();
 
@@ -68,51 +70,28 @@ ReplayStatus GLES_CreateReplayDevice(const char *logfile, IReplayDriver **driver
 {
   RDCDEBUG("Creating an OpenGL ES replay device");
 
+#if ENABLED(RDOC_ANDROID)
+  libGLdlsymHandle = dlopen("libEGL.so", RTLD_NOW);
+#endif
+
   // Query the required EGL functions
   if(eglCreateContextProc == NULL)
   {
-    eglGetProcAddressProc = (PFN_eglGetProcAddress)dlsym(RTLD_NEXT, "eglGetProcAddress");
-    eglChooseConfigProc = (PFN_eglChooseConfig)dlsym(RTLD_NEXT, "eglChooseConfig");
-    eglInitializeProc = (PFN_eglInitialize)dlsym(RTLD_NEXT, "eglInitialize");
-    eglBindAPIProc = (PFN_eglBindAPI)dlsym(RTLD_NEXT, "eglBindAPI");
-    eglGetDisplayProc = (PFN_eglGetDisplay)dlsym(RTLD_NEXT, "eglGetDisplay");
-    eglCreateContextProc = (PFN_eglCreateContext)dlsym(RTLD_NEXT, "eglCreateContext");
-    eglMakeCurrentProc = (PFN_eglMakeCurrent)dlsym(RTLD_NEXT, "eglMakeCurrent");
-    eglSwapBuffersProc = (PFN_eglSwapBuffers)dlsym(RTLD_NEXT, "eglSwapBuffers");
-    eglDestroyContextProc = (PFN_eglDestroyContext)dlsym(RTLD_NEXT, "eglDestroyContext");
-    eglDestroySurfaceProc = (PFN_eglDestroySurface)dlsym(RTLD_NEXT, "eglDestroySurface");
-    eglQuerySurfaceProc = (PFN_eglQuerySurface)dlsym(RTLD_NEXT, "eglQuerySurface");
+    eglGetProcAddressProc = (PFN_eglGetProcAddress)dlsym(libGLdlsymHandle, "eglGetProcAddress");
+    eglChooseConfigProc = (PFN_eglChooseConfig)dlsym(libGLdlsymHandle, "eglChooseConfig");
+    eglInitializeProc = (PFN_eglInitialize)dlsym(libGLdlsymHandle, "eglInitialize");
+    eglBindAPIProc = (PFN_eglBindAPI)dlsym(libGLdlsymHandle, "eglBindAPI");
+    eglGetDisplayProc = (PFN_eglGetDisplay)dlsym(libGLdlsymHandle, "eglGetDisplay");
+    eglCreateContextProc = (PFN_eglCreateContext)dlsym(libGLdlsymHandle, "eglCreateContext");
+    eglMakeCurrentProc = (PFN_eglMakeCurrent)dlsym(libGLdlsymHandle, "eglMakeCurrent");
+    eglSwapBuffersProc = (PFN_eglSwapBuffers)dlsym(libGLdlsymHandle, "eglSwapBuffers");
+    eglDestroyContextProc = (PFN_eglDestroyContext)dlsym(libGLdlsymHandle, "eglDestroyContext");
+    eglDestroySurfaceProc = (PFN_eglDestroySurface)dlsym(libGLdlsymHandle, "eglDestroySurface");
+    eglQuerySurfaceProc = (PFN_eglQuerySurface)dlsym(libGLdlsymHandle, "eglQuerySurface");
     eglCreatePbufferSurfaceProc =
-        (PFN_eglCreatePbufferSurface)dlsym(RTLD_NEXT, "eglCreatePbufferSurface");
+        (PFN_eglCreatePbufferSurface)dlsym(libGLdlsymHandle, "eglCreatePbufferSurface");
     eglCreateWindowSurfaceProc =
-        (PFN_eglCreateWindowSurface)dlsym(RTLD_NEXT, "eglCreateWindowSurface");
-
-	//Jimmy Hack Begin
-	if (eglGetProcAddressProc == NULL || eglBindAPIProc == NULL || eglGetDisplayProc == NULL ||
-		eglCreateContextProc == NULL || eglMakeCurrentProc == NULL || eglSwapBuffersProc == NULL ||
-		eglDestroyContextProc == NULL || eglDestroySurfaceProc == NULL ||
-		eglQuerySurfaceProc == NULL || eglCreatePbufferSurfaceProc == NULL ||
-		eglCreateWindowSurfaceProc == NULL || eglChooseConfigProc == NULL)
-	{
-		void * egl_lib = dlopen("libEGL.so", RTLD_NOW | RTLD_GLOBAL);
-		eglBindAPIProc = (PFN_eglBindAPI)dlsym(egl_lib, "eglBindAPI");
-		eglBindAPIProc(EGL_OPENGL_ES_API);
-
-		eglGetProcAddressProc = (PFN_eglGetProcAddress)dlsym(RTLD_NEXT, "eglGetProcAddress");
-		eglChooseConfigProc = (PFN_eglChooseConfig)dlsym(RTLD_NEXT, "eglChooseConfig");
-		eglInitializeProc = (PFN_eglInitialize)dlsym(RTLD_NEXT, "eglInitialize");
-		eglBindAPIProc = (PFN_eglBindAPI)dlsym(RTLD_NEXT, "eglBindAPI");
-		eglGetDisplayProc = (PFN_eglGetDisplay)dlsym(RTLD_NEXT, "eglGetDisplay");
-		eglCreateContextProc = (PFN_eglCreateContext)dlsym(RTLD_NEXT, "eglCreateContext");
-		eglMakeCurrentProc = (PFN_eglMakeCurrent)dlsym(RTLD_NEXT, "eglMakeCurrent");
-		eglSwapBuffersProc = (PFN_eglSwapBuffers)dlsym(RTLD_NEXT, "eglSwapBuffers");
-		eglDestroyContextProc = (PFN_eglDestroyContext)dlsym(RTLD_NEXT, "eglDestroyContext");
-		eglDestroySurfaceProc = (PFN_eglDestroySurface)dlsym(RTLD_NEXT, "eglDestroySurface");
-		eglQuerySurfaceProc = (PFN_eglQuerySurface)dlsym(RTLD_NEXT, "eglQuerySurface");
-		eglCreatePbufferSurfaceProc = (PFN_eglCreatePbufferSurface)dlsym(RTLD_NEXT, "eglCreatePbufferSurface");
-		eglCreateWindowSurfaceProc = (PFN_eglCreateWindowSurface)dlsym(RTLD_NEXT, "eglCreateWindowSurface");
-	}
-	//Jimmy Hack End
+        (PFN_eglCreateWindowSurface)dlsym(libGLdlsymHandle, "eglCreateWindowSurface");
 
     if(eglGetProcAddressProc == NULL || eglBindAPIProc == NULL || eglGetDisplayProc == NULL ||
        eglCreateContextProc == NULL || eglMakeCurrentProc == NULL || eglSwapBuffersProc == NULL ||

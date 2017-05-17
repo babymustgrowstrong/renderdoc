@@ -415,6 +415,8 @@ void CheckExtensions(const GLHookSet &gl)
       if(ext == NULL || !ext[0] || !ext[1] || !ext[2] || !ext[3])
         continue;
 
+      RDCLOG("glGetStringi(eGL_EXTENSIONS, %i) = %s", i, ext);
+
       ext += 3;
 
 #undef EXT_TO_CHECK

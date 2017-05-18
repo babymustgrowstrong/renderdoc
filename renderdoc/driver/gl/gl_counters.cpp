@@ -284,6 +284,7 @@ vector<CounterResult> GLReplay::FetchCounters(const vector<GPUCounter> &counters
     ctx.reuseIdx = loop == 0 ? -1 : 0;
     m_pDriver->SetFetchCounters(true);
     FillTimers(ctx, m_pDriver->GetRootDraw(), counters);
+    m_pDriver->glFlush();
     m_pDriver->SetFetchCounters(false);
 
     double nanosToSecs = 1.0 / 1000000000.0;

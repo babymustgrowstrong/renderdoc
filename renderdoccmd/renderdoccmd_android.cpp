@@ -23,6 +23,7 @@
  ******************************************************************************/
 
 #include "renderdoccmd.h"
+#include "replay/renderdoc_replay.h"
 #include <locale.h>
 #include <string.h>
 #include <unistd.h>
@@ -112,6 +113,7 @@ void handle_cmd(android_app *app, int32_t cmd)
   {
     case APP_CMD_INIT_WINDOW:
     {
+      SetAndroidNativeWindow(app->window);
       vector<string> args = getRenderdoccmdArgs();
       if(!args.size())
         break;    // Nothing for APK to do.

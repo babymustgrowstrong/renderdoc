@@ -138,7 +138,7 @@ struct XCBWindowData
 #if defined(RENDERDOC_PLATFORM_ANDROID)
 
 // android uses ANativeWindow*
-
+extern "C" RENDERDOC_API void SetAndroidNativeWindow(void * window);
 #endif
 
 DOCUMENT(R"(Specifies a windowing system to use for creating an output window.

@@ -217,6 +217,12 @@ public:
 #endif
       case WindowingSystem::Unknown:
         // allow WindowingSystem::Unknown so that internally we can create a window-less context
+#if ENABLED(RDOC_ANDROID)
+        extern void * AndroidNativeWindow;
+        if(AndroidNativeWindow) {
+          window = (EGLNativeWindowType)AndroidNativeWindow;
+        }
+#endif
         break;
       default: RDCERR("Unexpected window system %u", system); break;
     }

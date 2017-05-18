@@ -27,6 +27,13 @@
 
 extern char **environ;
 
+void * AndroidNativeWindow = NULL;
+
+extern "C" RENDERDOC_API void SetAndroidNativeWindow(void * window)
+{
+  AndroidNativeWindow = window;
+}
+
 char **GetCurrentEnvironment()
 {
   return environ;

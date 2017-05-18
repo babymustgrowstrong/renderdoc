@@ -4460,4 +4460,6 @@ void WrappedOpenGL::ReplayLog(uint32_t startEventID, uint32_t endEventID, Replay
   {
     RDCFATAL("Unexpected replay type");
   }
+
+  GetHookset().glFlush();
 }
